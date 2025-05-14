@@ -35,4 +35,5 @@ def obtener_datos_pago(request, session_id):
         metadata = session.get('metadata', {})
         return Response(metadata)
     except Exception as e:
+        print("❌ ERROR:", str(e))
         return Response({'error': str(e)}, status=400)
