@@ -27,3 +27,12 @@ def stripe_webhook(request):
         print("🧾 PAGO CONFIRMADO PARA SESSION:", session['id'])
 
     return HttpResponse(status=200)
+
+@api_view(['GET'])
+def obtener_datos_pago(request, session_id):
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        metadata = session.get('metadata', {})
+        return Response(metadata)
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
