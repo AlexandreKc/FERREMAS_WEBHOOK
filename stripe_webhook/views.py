@@ -7,7 +7,6 @@ from django.conf import settings
 stripe.api_key = 'sk_test_51ROTKbC0ISZZKwGbD573Oh5wcePqMB0VCyCo73LJhb2pS5kJ3c1iGB0j7bNum2RYUCTWSBOFiujiFXmzzBGKj8Jk00Dgk6Ue1k'
 WEBHOOK_SECRET = 'whsec_mslWQRzRFrhNnFPh355UjaqqNqHSkPgI'
 
-@api_view(['POST'])
 @csrf_exempt
 @api_view(['POST'])
 def stripe_webhook(request):
