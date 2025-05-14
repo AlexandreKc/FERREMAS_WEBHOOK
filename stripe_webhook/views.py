@@ -15,17 +15,31 @@ def stripe_webhook(request):
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
+    print("\n🔥 WEBHOOK RECIBIDO")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except Exception as e:
-        print("❌ Firma inválida o payload corrupto:", e)
-        return Response({"status": "NO PAGO"}, status=400)
+    except ValueError:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError:
+        return HttpResponse(status=400)
 
-    print(f"🔥 WEBHOOK RECIBIDO: {event['type']}")
+    print(f"✅ EVENTO: {event['type']}")
 
     if event['type'] == 'checkout.session.completed':
-        print("✅ PAGO")
-        return Response({"status": "PAGO"}, status=200)
-    else:
-        print("❌ NO PAGO")
-        return Response({"status": "NO PAGO"}, status=200)
+        session = event['data']['object']
+        print(f"✅ PAGO CONFIRMADO PARA SESSION: {session['id']}")
+        return JsonResponse({"session_id": session['id'], "status": "PAGO"})
+
+    return JsonResponse({"status": "NO PAGO"})
+
+
+# DEBUG: obtener detalles de la sesión desde Stripe
+@api_view(['GET'])
+def obtener_datos_pago(request, session_id):
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        return JsonResponse(session)
+    except Exception as e:
+        print(f"❌ ERROR AL OBTENER DATOS DE SESION: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
